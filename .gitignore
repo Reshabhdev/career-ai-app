@@ -1,0 +1,22 @@
+# Python internals
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+.env
+
+# IDE settings
+.vscode/
+.idea/
+.DS_Store
+
+# Data (Too large for Git)
+app/data/*.txt
+app/data/*.csv
+app/data/*.npy
+app/data/*.zip
+
+# Logs
+*.log
