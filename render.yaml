@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: careersystem-backend
+    env: docker
+    dockerfilePath: backend.Dockerfile
+    branch: main
+    autoDeploy: true
+    plan: free
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    healthCheckPath: /
