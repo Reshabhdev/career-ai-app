@@ -36,6 +36,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/")
+def root():
+    return {
+        "name": "Career Compass AI",
+        "version": "1.0",
+        "status": "running",
+        "endpoints": {
+            "health": "/health",
+            "api_docs": "/docs",
+            "recommendations": "POST /api/recommend"
+        }
+    }
+
 @app.post("/api/recommend", response_model=RecommendationResponse)
 def get_recommendations(user: UserProfile):
     engine = service_container.get("engine")

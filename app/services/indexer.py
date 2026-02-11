@@ -15,17 +15,27 @@ def index_to_qdrant():
     # If QDRANT_URL and QDRANT_API_KEY are provided (set them in your environment),
     # use the cloud Qdrant instance. Otherwise fall back to local file-based DB.
     if settings.QDRANT_URL and settings.QDRANT_API_KEY:
-        client = QdrantClient(url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY)
+        try:
+            client = QdrantClient(url=settings.QDRANT_URL, api_key=settings.QDRANT_API_KEY, timeout=30)
+        except Exception as e:
+            print(f"⚠️ Failed to connect to remote Qdrant: {e}")
+            print("   Using local Qdrant fallback instead.")
+            client = QdrantClient(path=db_path)
     else:
         client = QdrantClient(path=db_path)
     
     COLLECTION_NAME = "careers"
 
     # Reset Collection
-    client.recreate_collection(
-        collection_name=COLLECTION_NAME,
-        vectors_config=VectorParams(size=384, distance=Distance.COSINE),
-    )
+    try:
+        client.recreate_collection(
+            collection_name=COLLECTION_NAME,
+            vectors_config=VectorParams(size=384, distance=Distance.COSINE),
+        )
+    except Exception as e:
+        print(f"⚠️ Failed to recreate collection: {e}")
+        print("   Skipping indexing. Using local fallback embeddings instead.")
+        return
 
     # Load Data
     csv_path = os.path.join(settings.DATA_DIR, settings.PROCESSED_DATA_FILE)
@@ -50,8 +60,12 @@ def index_to_qdrant():
             }
         ))
 
-    client.upsert(collection_name=COLLECTION_NAME, points=points)
-    print(f"   ✅ Indexed {len(points)} jobs.")
+    try:
+        client.upsert(collection_name=COLLECTION_NAME, points=points)
+        print(f"   ✅ Indexed {len(points)} jobs.")
+    except Exception as e:
+        print(f"⚠️ Failed to upload to Qdrant: {e}")
+        print("   The application will use local fallback embeddings for search.")
 
 if __name__ == "__main__":
     index_to_qdrant()

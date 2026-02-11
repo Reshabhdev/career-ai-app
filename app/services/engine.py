@@ -43,42 +43,90 @@ class CareerEngine:
         # SentenceTransformer used both with Qdrant (to create query vectors)
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
         self.collection = "careers"
+        # Local fallback data (loaded on demand)
+        self.embeddings = getattr(self, 'embeddings', None)
+        self.local_jobs = getattr(self, 'local_jobs', [])
+
+    def _ensure_local_data_loaded(self):
+        if self.embeddings is not None and getattr(self, 'local_jobs', None):
+            return
+        try:
+            import numpy as _np
+            import pandas as _pd
+
+            emb_path = os.path.join(settings.DATA_DIR, "career_embeddings.npy")
+            csv_path = os.path.join(settings.DATA_DIR, "career_gold_dataset.csv")
+            self.embeddings = _np.load(emb_path)
+            df = _pd.read_csv(csv_path)
+            self.local_jobs = df.to_dict(orient="records")
+            print(f"✅ Loaded local fallback data: {len(self.local_jobs)} jobs")
+        except Exception as e:
+            print(f"❌ Failed to load local fallback data: {e}")
+            self.embeddings = None
+            self.local_jobs = []
 
     def search(self, user_query: str, max_education_level: int = 5, top_k=5):
         # If Qdrant is available, use it as before
         if self.client:
-            query_vector = self.model.encode(user_query).tolist()
+            # If the remote collection is missing, fall back to local search instead of raising.
+            try:
+                try:
+                    # Check collection existence (may raise if not found)
+                    self.client.get_collection(collection_name=self.collection)
+                except Exception:
+                    print(f"⚠️ Qdrant collection '{self.collection}' not found — falling back to local search")
+                    # load local fallback dataset and continue with local search
+                    self._ensure_local_data_loaded()
+                    # delegate to local path below
+                    raise RuntimeError("use_local_fallback")
 
-            search_result = self.client.query_points(
-                collection_name=self.collection,
-                query=query_vector,
-                limit=top_k,
-                with_payload=True,
-                query_filter=Filter(
-                    must=[
-                        FieldCondition(
-                            key="job_zone",
-                            range=Range(lte=max_education_level)
-                        )
-                    ]
+                query_vector = self.model.encode(user_query).tolist()
+
+                search_result = self.client.query_points(
+                    collection_name=self.collection,
+                    query=query_vector,
+                    limit=top_k,
+                    with_payload=True,
+                    query_filter=Filter(
+                        must=[
+                            FieldCondition(
+                                key="job_zone",
+                                range=Range(lte=max_education_level)
+                            )
+                        ]
+                    )
                 )
-            )
 
-            results = []
-            for hit in search_result.points:
-                payload = hit.payload
-                results.append({
-                    "id": payload.get('soc_code', str(hit.id)),
-                    "title": payload.get('title', 'Unknown'),
-                    "match_score": round(hit.score * 100, 2),
-                    "education_requirement": payload.get('education', ''),
-                    "description": payload.get('description', '')
-                })
+                results = []
+                for hit in search_result.points:
+                    payload = hit.payload
+                    results.append({
+                        "id": payload.get('soc_code', str(hit.id)),
+                        "title": payload.get('title', 'Unknown'),
+                        "match_score": round(hit.score * 100, 2),
+                        "education_requirement": payload.get('education', ''),
+                        "description": payload.get('description', '')
+                    })
 
-            return results
+                return results
+            except RuntimeError as re:
+                # internal signal to use local fallback
+                if str(re) == "use_local_fallback":
+                    pass
+                else:
+                    raise
+            except Exception as e:
+                # Other Qdrant/runtime errors: try local fallback if possible
+                print(f"⚠️ Qdrant query failed: {e} — attempting local fallback")
+                self._ensure_local_data_loaded()
+                # if local data missing, re-raise original error
+                if self.embeddings is None or not self.local_jobs:
+                    raise
 
         # Local fallback search using precomputed embeddings
-        if self.embeddings is None or not hasattr(self, 'local_jobs') or len(self.local_jobs) == 0:
+        # Ensure local data is loaded
+        self._ensure_local_data_loaded()
+        if self.embeddings is None or not getattr(self, 'local_jobs', None) or len(self.local_jobs) == 0:
             raise RuntimeError("No search backend available (Qdrant unavailable and local fallback missing)")
 
         # Compute similarity between query vector and embeddings
