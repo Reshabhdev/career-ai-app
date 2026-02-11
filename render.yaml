@@ -9,4 +9,4 @@ services:
     envVars:
       - key: PYTHONUNBUFFERED
         value: "1"
-    healthCheckPath: /
+    healthCheckPath: /health
