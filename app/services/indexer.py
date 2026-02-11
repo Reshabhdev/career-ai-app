@@ -1,7 +1,7 @@
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
-from qdrant_client.models import PointStruct, VectorParams, Distance
+from qdrant_client.models import PointStruct, VectorParams, Distance, CreateIndexRequest
 import os
 import sys
 
@@ -31,6 +31,12 @@ def index_to_qdrant():
         client.recreate_collection(
             collection_name=COLLECTION_NAME,
             vectors_config=VectorParams(size=384, distance=Distance.COSINE),
+        )
+        # Create index on job_zone field for filtering
+        client.create_payload_index(
+            collection_name=COLLECTION_NAME,
+            field_name="job_zone",
+            field_schema="integer"
         )
     except Exception as e:
         print(f"⚠️ Failed to recreate collection: {e}")
