@@ -10,8 +10,19 @@ service_container = {}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("🚀 Starting Server...")
-    service_container["engine"] = CareerEngine()
-    service_container["advisor"] = CareerAdvisor()
+    # Initialize services but don't let failures prevent the app from starting.
+    try:
+        service_container["engine"] = CareerEngine()
+    except Exception as e:
+        print(f"⚠️ Failed to initialize CareerEngine: {e}")
+        service_container["engine"] = None
+
+    try:
+        service_container["advisor"] = CareerAdvisor()
+    except Exception as e:
+        print(f"⚠️ Failed to initialize CareerAdvisor: {e}")
+        service_container["advisor"] = None
+
     yield
     print("🛑 Shutting down...")
 
@@ -19,7 +30,7 @@ app = FastAPI(title="Career Compass AI", version="1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], 
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"], 
     allow_headers=["*"],
@@ -51,3 +62,8 @@ def get_recommendations(user: UserProfile):
         "user_summary": ai_summary,
         "recommendations": results
     }
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}

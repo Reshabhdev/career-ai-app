@@ -1,16 +1,26 @@
 # --- Stage 1: Build the React App ---
-FROM node:18-alpine as build
-
+FROM node:18-slim as build
 WORKDIR /app
 
-# Copy package.json and install dependencies
+# Build in production mode for smaller bundles
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+
+# Install minimal build tools for native addons (some deps need compilation)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+	build-essential \
+	python3 \
+	&& rm -rf /var/lib/apt/lists/*
+
+# Copy package.json first for layer caching
 COPY frontend/package*.json ./
+# Install full dependencies (devDependencies are required for the build e.g. Vite)
 RUN npm install
 
 # Copy the rest of the frontend code
 COPY frontend/ ./
 
-# Build the project (Creates the 'dist' folder)
+# Build the project (creates the 'dist' folder)
 RUN npm run build
 
 # --- Stage 2: Serve with Nginx ---
