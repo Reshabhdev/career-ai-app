@@ -59,6 +59,9 @@ def get_recommendations(user: UserProfile):
 
     search_query = f"{user.interests}. My skills are: {user.skills}."
     
+
+    import time
+    t0 = time.time()
     try:
         results = engine.search(
             user_query=search_query,
@@ -68,6 +71,8 @@ def get_recommendations(user: UserProfile):
     except Exception as e:
         print(f"❌ SEARCH ERROR: {e}")
         raise HTTPException(status_code=500, detail=f"Search Error: {str(e)}")
+    t1 = time.time()
+    print(f"[TIMING] /api/recommend total search time: {t1-t0:.3f}s")
 
     ai_summary = advisor.generate_advice(user_profile=user.dict(), jobs=results)
 

@@ -66,6 +66,8 @@ class CareerEngine:
             self.local_jobs = []
 
     def search(self, user_query: str, max_education_level: int = 5, top_k=5):
+        import time
+        t0 = time.time()
         # If Qdrant is available, use it as before
         if self.client:
             # If the remote collection is missing, fall back to local search instead of raising.
@@ -80,7 +82,9 @@ class CareerEngine:
                     # delegate to local path below
                     raise RuntimeError("use_local_fallback")
 
+                t1 = time.time()
                 query_vector = self.model.encode(user_query).tolist()
+                t2 = time.time()
 
                 search_result = self.client.query_points(
                     collection_name=self.collection,
@@ -108,6 +112,8 @@ class CareerEngine:
                         "description": payload.get('description', '')
                     })
 
+                t3 = time.time()
+                print(f"[TIMING] Qdrant: encode={t2-t1:.3f}s, query={t3-t2:.3f}s, total={t3-t0:.3f}s")
                 return results
             except RuntimeError as re:
                 # internal signal to use local fallback
@@ -130,7 +136,9 @@ class CareerEngine:
             raise RuntimeError("No search backend available (Qdrant unavailable and local fallback missing)")
 
         # Compute similarity between query vector and embeddings
+        t4 = time.time()
         query_vec = self.model.encode(user_query).reshape(1, -1)
+        t5 = time.time()
         try:
             from sklearn.metrics.pairwise import cosine_similarity
             import numpy as _np
@@ -162,6 +170,8 @@ class CareerEngine:
                     "description": row.get('Description') or ''
                 })
 
+            t6 = time.time()
+            print(f"[TIMING] Local: encode={t5-t4:.3f}s, similarity+filter={t6-t5:.3f}s, total={t6-t0:.3f}s")
             return results
         except Exception as e:
             raise RuntimeError(f"Local search failed: {e}")
