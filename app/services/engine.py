@@ -71,16 +71,9 @@ class CareerEngine:
         # If Qdrant is available, use it as before
         if self.client:
             # If the remote collection is missing, fall back to local search instead of raising.
+            # If the remote collection is missing, query_points will raise an exception
+            # and fall back to local search.
             try:
-                try:
-                    # Check collection existence (may raise if not found)
-                    self.client.get_collection(collection_name=self.collection)
-                except Exception:
-                    print(f"⚠️ Qdrant collection '{self.collection}' not found — falling back to local search")
-                    # load local fallback dataset and continue with local search
-                    self._ensure_local_data_loaded()
-                    # delegate to local path below
-                    raise RuntimeError("use_local_fallback")
 
                 t1 = time.time()
                 query_vector = self.model.encode(user_query).tolist()
@@ -115,12 +108,6 @@ class CareerEngine:
                 t3 = time.time()
                 print(f"[TIMING] Qdrant: encode={t2-t1:.3f}s, query={t3-t2:.3f}s, total={t3-t0:.3f}s")
                 return results
-            except RuntimeError as re:
-                # internal signal to use local fallback
-                if str(re) == "use_local_fallback":
-                    pass
-                else:
-                    raise
             except Exception as e:
                 # Other Qdrant/runtime errors: try local fallback if possible
                 print(f"⚠️ Qdrant query failed: {e} — attempting local fallback")
