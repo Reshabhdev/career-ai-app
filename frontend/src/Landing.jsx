@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Sparkles, Target, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react';
 
 export default function Landing() {
   return (
@@ -47,13 +48,25 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Link 
-              to="/app" 
-              className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white transition-all duration-200 bg-slate-900 rounded-full hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900"
-            >
-              Start Your Journey
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            <SignedIn>
+              <Link 
+                to="/app" 
+                className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white transition-all duration-200 bg-slate-900 rounded-full hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900"
+              >
+                Start Your Journey
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </SignedIn>
+            <SignedOut>
+              <SignInButton mode="modal" forceRedirectUrl="/app">
+                <button 
+                  className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white transition-all duration-200 bg-slate-900 rounded-full hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900"
+                >
+                  Start Your Journey
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </SignInButton>
+            </SignedOut>
           </motion.div>
         </div>
 
