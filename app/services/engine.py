@@ -32,9 +32,8 @@ class CareerEngine:
                 emb_path = os.path.join(settings.DATA_DIR, "job_embeddings.npy")
                 csv_path = os.path.join(settings.DATA_DIR, "job_dataset.csv")
                 self.embeddings = _np.load(emb_path)
-                df = _pd.read_csv(csv_path)
-                self.local_jobs = df.to_dict(orient="records")
-                print(f"✅ Loaded local fallback data: {len(self.local_jobs)} jobs")
+                self.df = _pd.read_csv(csv_path)
+                print(f"✅ Loaded local fallback data: {len(self.df)} jobs")
             except Exception as e2:
                 print(f"❌ Failed to load local fallback data: {e2}")
                 self.embeddings = None
@@ -45,10 +44,10 @@ class CareerEngine:
         self.collection = "careers"
         # Local fallback data (loaded on demand)
         self.embeddings = getattr(self, 'embeddings', None)
-        self.local_jobs = getattr(self, 'local_jobs', [])
+        self.df = getattr(self, 'df', None)
 
     def _ensure_local_data_loaded(self):
-        if self.embeddings is not None and getattr(self, 'local_jobs', None):
+        if self.embeddings is not None and getattr(self, 'df', None) is not None:
             return
         try:
             import numpy as _np
@@ -57,13 +56,12 @@ class CareerEngine:
             emb_path = os.path.join(settings.DATA_DIR, "job_embeddings.npy")
             csv_path = os.path.join(settings.DATA_DIR, "job_dataset.csv")
             self.embeddings = _np.load(emb_path)
-            df = _pd.read_csv(csv_path)
-            self.local_jobs = df.to_dict(orient="records")
-            print(f"✅ Loaded local fallback data: {len(self.local_jobs)} jobs")
+            self.df = _pd.read_csv(csv_path)
+            print(f"✅ Loaded local fallback data: {len(self.df)} jobs")
         except Exception as e:
             print(f"❌ Failed to load local fallback data: {e}")
             self.embeddings = None
-            self.local_jobs = []
+            self.df = None
 
     def search(self, user_query: str, max_education_level: int = 5, top_k=5):
         import time
@@ -113,13 +111,13 @@ class CareerEngine:
                 print(f"⚠️ Qdrant query failed: {e} — attempting local fallback")
                 self._ensure_local_data_loaded()
                 # if local data missing, re-raise original error
-                if self.embeddings is None or not self.local_jobs:
+                if self.embeddings is None or getattr(self, 'df', None) is None:
                     raise
 
         # Local fallback search using precomputed embeddings
         # Ensure local data is loaded
         self._ensure_local_data_loaded()
-        if self.embeddings is None or not getattr(self, 'local_jobs', None) or len(self.local_jobs) == 0:
+        if self.embeddings is None or getattr(self, 'df', None) is None or self.df.empty:
             raise RuntimeError("No search backend available (Qdrant unavailable and local fallback missing)")
 
         # Compute similarity between query vector and embeddings
@@ -141,7 +139,7 @@ class CareerEngine:
 
             results = []
             for idx, score in top:
-                row = self.local_jobs[idx]
+                row = self.df.iloc[idx].to_dict()
                 row_id = row.get('job_id') or row.get('O*NET-SOC Code') or row.get('O*NET_SOC Code') or str(idx)
                 row_title = row.get('job_title') or row.get('Title') or row.get('title') or 'Unknown'
                 row_desc = row.get('descriptions') or row.get('Description') or ''
