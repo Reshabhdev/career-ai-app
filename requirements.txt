@@ -12,3 +12,5 @@ python-dotenv
 requests
 qdrant-client
 openai
+datasets
+pyarrow
