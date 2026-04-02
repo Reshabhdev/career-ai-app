@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from app.services.engine import CareerEngine
 from app.services.advisor import CareerAdvisor
-from app.api.models import UserProfile, RecommendationResponse
+from app.api.models import UserProfile, RecommendationResponse, RoadmapRequest, RoadmapResponse
 
 service_container = {}
 
@@ -79,6 +79,30 @@ def get_recommendations(user: UserProfile):
     return {
         "user_summary": ai_summary,
         "recommendations": results
+    }
+
+@app.post("/api/roadmap", response_model=RoadmapResponse)
+def get_roadmap(req: RoadmapRequest):
+    advisor = service_container.get("advisor")
+
+    if not advisor:
+        raise HTTPException(status_code=500, detail="Advisor Service not initialized")
+
+    import time
+    t0 = time.time()
+    try:
+        roadmap_md = advisor.generate_roadmap(
+            user_profile=req.user_profile.dict(),
+            job_title=req.job_title
+        )
+    except Exception as e:
+        print(f"❌ ROADMAP ERROR: {e}")
+        raise HTTPException(status_code=500, detail=f"Roadmap Error: {str(e)}")
+    t1 = time.time()
+    print(f"[TIMING] /api/roadmap total generation time: {t1-t0:.3f}s")
+
+    return {
+        "roadmap": roadmap_md
     }
 
 

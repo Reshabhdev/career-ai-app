@@ -17,3 +17,10 @@ class CareerRecommendation(BaseModel):
 class RecommendationResponse(BaseModel):
     user_summary: str
     recommendations: List[CareerRecommendation]
+
+class RoadmapRequest(BaseModel):
+    user_profile: UserProfile
+    job_title: str
+
+class RoadmapResponse(BaseModel):
+    roadmap: str

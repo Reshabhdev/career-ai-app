@@ -29,8 +29,8 @@ class CareerEngine:
                 import numpy as _np
                 import pandas as _pd
 
-                emb_path = os.path.join(settings.DATA_DIR, "career_embeddings.npy")
-                csv_path = os.path.join(settings.DATA_DIR, "career_gold_dataset.csv")
+                emb_path = os.path.join(settings.DATA_DIR, "job_embeddings.npy")
+                csv_path = os.path.join(settings.DATA_DIR, "job_dataset.csv")
                 self.embeddings = _np.load(emb_path)
                 df = _pd.read_csv(csv_path)
                 self.local_jobs = df.to_dict(orient="records")
@@ -54,8 +54,8 @@ class CareerEngine:
             import numpy as _np
             import pandas as _pd
 
-            emb_path = os.path.join(settings.DATA_DIR, "career_embeddings.npy")
-            csv_path = os.path.join(settings.DATA_DIR, "career_gold_dataset.csv")
+            emb_path = os.path.join(settings.DATA_DIR, "job_embeddings.npy")
+            csv_path = os.path.join(settings.DATA_DIR, "job_dataset.csv")
             self.embeddings = _np.load(emb_path)
             df = _pd.read_csv(csv_path)
             self.local_jobs = df.to_dict(orient="records")
@@ -133,15 +133,8 @@ class CareerEngine:
             sims = cosine_similarity(query_vec, self.embeddings)[0]
             # Filter by job_zone (csv column 'Job Zone' -- numeric), then take top_k
             indexed = list(enumerate(sims))
-            # Apply education/job zone filter
-            filtered = []
-            for idx, score in indexed:
-                try:
-                    job_zone = float(self.local_jobs[idx].get('Job Zone', self.local_jobs[idx].get('Job_Zone', 5)))
-                except Exception:
-                    job_zone = 5.0
-                if job_zone <= float(max_education_level):
-                    filtered.append((idx, score))
+            # The new dataset `job_dataset.csv` does not have a job zone filtering metric, so bypass job_zone filter
+            filtered = list(indexed)
 
             filtered.sort(key=lambda x: x[1], reverse=True)
             top = filtered[:top_k]
@@ -149,12 +142,17 @@ class CareerEngine:
             results = []
             for idx, score in top:
                 row = self.local_jobs[idx]
+                row_id = row.get('job_id') or row.get('O*NET-SOC Code') or row.get('O*NET_SOC Code') or str(idx)
+                row_title = row.get('job_title') or row.get('Title') or row.get('title') or 'Unknown'
+                row_desc = row.get('descriptions') or row.get('Description') or ''
+                row_edu = row.get('Education_Level') or row.get('Education Level') or 'Not Specified'
+                
                 results.append({
-                    "id": row.get('O*NET-SOC Code') or row.get('O*NET_SOC Code') or str(idx),
-                    "title": row.get('Title') or row.get('title') or 'Unknown',
+                    "id": str(row_id),
+                    "title": str(row_title),
                     "match_score": round(float(score) * 100, 2),
-                    "education_requirement": row.get('Education_Level') or row.get('Education Level') or '',
-                    "description": row.get('Description') or ''
+                    "education_requirement": str(row_edu),
+                    "description": str(row_desc)
                 })
 
             t6 = time.time()

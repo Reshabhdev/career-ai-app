@@ -24,6 +24,9 @@ RUN python -m pip install --upgrade pip && \
 # 5. Copy the rest of your application code
 COPY app ./app
 
+# 5.5 Setup Hugging Face dataset and embeddings
+RUN python app/data_setup.py
+
 # 6. Expose the port the app runs on (optional; Render provides $PORT at runtime)
 EXPOSE 8000
 

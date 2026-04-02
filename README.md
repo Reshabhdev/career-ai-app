@@ -209,19 +209,24 @@ python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 Backend runs at: `http://localhost:8000`
 API Docs: `http://localhost:8000/docs`
 
-### Index Data to Qdrant (One-time setup)
+### Index Data & Setup Hugging Face Dataset (One-time setup)
 
-Before first use, index the career data:
+Before first use, you must download the Hugging Face job dataset and generate embeddings:
 
 ```bash
-python app/services/indexer.py
+python app/data_setup.py
 ```
 
 This will:
-1. Connect to Qdrant (cloud or local)
-2. Load career data from CSV
-3. Generate embeddings for all jobs
-4. Create indexed collections for filtering
+1. Download `azrai99/job-dataset` from Hugging Face
+2. Save it to `app/data/job_dataset.csv`
+3. Download Sentence-Transformers (`all-MiniLM-L6-v2`)
+4. Generate 384-dimensional embeddings and save to `app/data/job_embeddings.npy`
+
+*(Optional) If you are using Qdrant Cloud:*
+```bash
+python app/services/indexer.py
+```
 
 ### Frontend Development Server
 
@@ -322,9 +327,9 @@ docker run -p 3000:3000 career-frontend
 1. Push to GitHub repository
 2. Connect Render to your repo
 3. Create new Web Service with:
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `gunicorn app.main:app --workers 4`
-   - **Environment Variables:** Add `OPENAI_API_KEY`, `QDRANT_URL`, `QDRANT_API_KEY`
+   - **Build Command:** `pip install -r requirements.txt && python app/data_setup.py`
+   - **Start Command:** `gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker`
+   - **Environment Variables:** Add `OPENAI_API_KEY`
 4. Deploy from [render.yaml](render.yaml)
 
 **Live Backend:** https://careersystem-backend.onrender.com/
