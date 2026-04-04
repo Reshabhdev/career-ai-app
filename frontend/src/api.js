@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Use Vite env `VITE_API_URL` or `VITE_API_BASE_URL` if present, otherwise default to localhost
-const API_URL = import.meta?.env?.VITE_API_URL || import.meta?.env?.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
 // If API_URL is just the base (e.g., http://localhost:8000), append /api
 const getNormalizedApiUrl = () => {
