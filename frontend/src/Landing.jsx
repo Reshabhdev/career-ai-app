@@ -84,7 +84,7 @@ export default function Landing() {
                 </button>
               </SignInButton>
               <SignInButton mode="modal">
-                <button className="px-5 py-2.5 text-sm font-bold text-slate-900 bg-blue-600 hover:bg-blue-700 transition-all rounded-lg flex items-center gap-2 shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] active:scale-95">
+                <button className="px-5 py-2.5 text-sm font-bold text-white bg-[#C68E58]/80 hover:bg-[#C68E58] transition-all rounded-lg flex items-center gap-2 shadow-[0_4px_14px_0_rgba(198,142,88,0.39)] hover:shadow-[0_6px_20px_rgba(198,142,88,0.4)] active:scale-95">
                   Get Started <ChevronRight className="w-4 h-4" />
                 </button>
               </SignInButton>
@@ -111,7 +111,7 @@ export default function Landing() {
 
             <h1 className={`text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-6 transition-colors ${isDarkMode ? 'text-slate-900' : 'text-slate-900'}`}>
               Precision Career <br className="hidden md:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500">
+              <span className="text-[#5E2B2B]">
                 Intelligence.
               </span>
             </h1>
@@ -122,13 +122,13 @@ export default function Landing() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <SignedIn>
-                <Link to="/app" className="h-14 px-8 inline-flex items-center justify-center text-sm font-bold text-slate-900 bg-blue-600 hover:bg-blue-700 transition-all rounded-xl gap-2 shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] active:scale-95">
+                <Link to="/app" className="h-14 px-8 inline-flex items-center justify-center text-sm font-bold text-white bg-[#C68E58]/80 hover:bg-[#C68E58] transition-all rounded-xl gap-2 shadow-[0_4px_14px_0_rgba(198,142,88,0.39)] hover:shadow-[0_6px_20px_rgba(198,142,88,0.4)] active:scale-95">
                   Launch Analysis <ArrowRight className="w-4 h-4" />
                 </Link>
               </SignedIn>
               <SignedOut>
                 <SignInButton mode="modal">
-                  <button className="h-14 px-8 inline-flex items-center justify-center text-sm font-bold text-slate-900 bg-blue-600 hover:bg-blue-700 transition-all rounded-xl gap-2 shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] active:scale-95">
+                  <button className="h-14 px-8 inline-flex items-center justify-center text-sm font-bold text-white bg-[#C68E58]/80 hover:bg-[#C68E58] transition-all rounded-xl gap-2 shadow-[0_4px_14px_0_rgba(198,142,88,0.39)] hover:shadow-[0_6px_20px_rgba(198,142,88,0.4)] active:scale-95">
                     Initialize Profile <ArrowRight className="w-4 h-4" />
                   </button>
                 </SignInButton>
