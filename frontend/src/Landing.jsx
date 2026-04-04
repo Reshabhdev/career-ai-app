@@ -38,17 +38,20 @@ export default function Landing() {
   }, [isLoaded, isSignedIn, user]);
 
   return (
-    <div className={`min-h-screen font-sans transition-colors duration-500 selection:bg-blue-500/30 ${isDarkMode ? 'bg-[#eef2ff] text-slate-800' : 'bg-[#F8FAFC] text-slate-600'}`}>
+    <div 
+      className={`min-h-screen font-sans transition-colors duration-500 selection:bg-orange-500/30 text-slate-800`}
+      style={{
+        backgroundImage: "url('/begground1.jpeg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
 
-      {/* Premium Ambient Background */}
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className={`absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] transition-opacity duration-1000 ${isDarkMode ? 'bg-blue-600/20' : 'bg-blue-400/10'}`} />
-        <div className={`absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full blur-[120px] transition-opacity duration-1000 ${isDarkMode ? 'bg-indigo-600/20' : 'bg-indigo-400/10'}`} />
-        <div className={`absolute inset-0 bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 ${isDarkMode ? 'bg-[linear-gradient(to_right,#c7d2fe_1px,transparent_1px),linear-gradient(to_bottom,#c7d2fe_1px,transparent_1px)]' : 'bg-[linear-gradient(to_right,#cbd5e1_1px,transparent_1px),linear-gradient(to_bottom,#cbd5e1_1px,transparent_1px)]'}`} />
-      </div>
+      {/* Desktop Background Ambient (removed to show the pure wave image) */}
 
       {/* Sticky Glass Navbar */}
-      <nav className={`fixed w-full z-50 top-0 transition-all duration-300 backdrop-blur-xl border-b ${isDarkMode ? 'border-indigo-200/60 bg-[#eef2ff]/80' : 'border-slate-200/80 bg-white/70'}`}>
+      <nav className={`fixed w-full z-50 top-0 transition-all duration-300 backdrop-blur-xl border-b ${isDarkMode ? 'border-indigo-200/60 bg-white/40' : 'border-slate-200/80 bg-white/70'}`}>
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
 
           {/* Logo */}
@@ -70,13 +73,6 @@ export default function Landing() {
 
           {/* Auth Actions & Theme Toggle */}
           <div className="flex items-center gap-5">
-            <button
-              onClick={toggleTheme}
-              className={`p-2.5 rounded-full transition-all active:scale-95 border ${isDarkMode ? 'bg-white/60 border-indigo-200 text-amber-500 hover:bg-white' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-blue-600 shadow-sm'}`}
-              aria-label="Toggle Theme"
-            >
-              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
 
             <SignedIn>
               <UserButton appearance={{ elements: { avatarBox: "w-9 h-9 border-2 border-slate-200" } }} />
@@ -211,7 +207,7 @@ export default function Landing() {
       </main>
 
       {/* Footer */}
-      <footer className={`border-t py-10 transition-colors ${isDarkMode ? 'border-indigo-200/60 bg-[#eef2ff]' : 'border-slate-200 bg-[#F8FAFC]'}`}>
+      <footer className={`border-t py-10 transition-colors ${isDarkMode ? 'border-indigo-200/60 bg-white/40 backdrop-blur-md' : 'border-slate-200 bg-[#F8FAFC]'}`}>
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <Hexagon className={`w-5 h-5 ${isDarkMode ? 'text-slate-600' : 'text-slate-700'}`} fill="currentColor" />
