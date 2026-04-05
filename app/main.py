@@ -5,24 +5,45 @@ from app.services.engine import CareerEngine
 from app.services.advisor import CareerAdvisor
 from app.api.models import UserProfile, RecommendationResponse, RoadmapRequest, RoadmapResponse
 
+import asyncio
+import threading
+
 service_container = {}
+service_lock = threading.Lock()
+
+def get_engine():
+    with service_lock:
+        if "engine" not in service_container:
+            try:
+                service_container["engine"] = CareerEngine()
+            except Exception as e:
+                print(f"⚠️ Failed to initialize CareerEngine: {e}")
+                service_container["engine"] = None
+    return service_container.get("engine")
+
+def get_advisor():
+    with service_lock:
+        if "advisor" not in service_container:
+            try:
+                service_container["advisor"] = CareerAdvisor()
+            except Exception as e:
+                print(f"⚠️ Failed to initialize CareerAdvisor: {e}")
+                service_container["advisor"] = None
+    return service_container.get("advisor")
+
+def init_services():
+    get_engine()
+    get_advisor()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("🚀 Starting Server...")
-    # Initialize services but don't let failures prevent the app from starting.
+    # Background initialization prevents port-binding timeout on platforms like Render
     try:
-        service_container["engine"] = CareerEngine()
+        loop = asyncio.get_running_loop()
+        loop.run_in_executor(None, init_services)
     except Exception as e:
-        print(f"⚠️ Failed to initialize CareerEngine: {e}")
-        service_container["engine"] = None
-
-    try:
-        service_container["advisor"] = CareerAdvisor()
-    except Exception as e:
-        print(f"⚠️ Failed to initialize CareerAdvisor: {e}")
-        service_container["advisor"] = None
-
+        print(f"⚠️ Failed to schedule background init: {e}")
     yield
     print("🛑 Shutting down...")
 
@@ -51,8 +72,8 @@ def root():
 
 @app.post("/api/recommend", response_model=RecommendationResponse)
 def get_recommendations(user: UserProfile):
-    engine = service_container.get("engine")
-    advisor = service_container.get("advisor")
+    engine = get_engine()
+    advisor = get_advisor()
 
     if not engine or not advisor:
         raise HTTPException(status_code=500, detail="Services not initialized")
@@ -83,7 +104,7 @@ def get_recommendations(user: UserProfile):
 
 @app.post("/api/roadmap", response_model=RoadmapResponse)
 def get_roadmap(req: RoadmapRequest):
-    advisor = service_container.get("advisor")
+    advisor = get_advisor()
 
     if not advisor:
         raise HTTPException(status_code=500, detail="Advisor Service not initialized")

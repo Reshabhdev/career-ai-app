@@ -4,6 +4,10 @@ FROM python:3.10-slim
 # 2. Set the working directory inside the container
 WORKDIR /app
 
+# Configure HF cache directory to exist within the app directory
+ENV HF_HOME=/app/hf_cache
+ENV SENTENCE_TRANSFORMERS_HOME=/app/hf_cache
+
 # 3. Install system dependencies (needed for some Python packages)
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	build-essential \
