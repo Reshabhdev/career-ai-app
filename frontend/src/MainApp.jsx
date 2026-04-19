@@ -222,18 +222,7 @@ export default function MainApp() {
             {results && !loading && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
 
-                {/* AI Executive Summary */}
-                <div className="bg-slate-900 text-white p-8 rounded-2xl shadow-xl shadow-slate-200 mb-10 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-500/20 to-purple-500/20 blur-3xl rounded-full -mr-20 -mt-20 transition-transform group-hover:scale-110 duration-700"></div>
-                  <div className="relative z-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-medium text-blue-400 mb-4">
-                      <Sparkles className="w-3 h-3" /> System Synthesis
-                    </div>
-                    <p className="leading-relaxed text-slate-300 text-lg font-light">
-                      {results.user_summary}
-                    </p>
-                  </div>
-                </div>
+
 
                 {/* Recommendation Header */}
                 <div className="flex items-center justify-between mb-6 px-1">

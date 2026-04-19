@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     QDRANT_URL: str | None = None
     QDRANT_API_KEY: str | None = None
     OPENAI_API_KEY: str | None = None
+    GEMINI_API_KEY: str | None = None
     QDRANT_LOCAL_PATH: str = os.path.join(DATA_DIR, "qdrant_db")
 
     class Config:

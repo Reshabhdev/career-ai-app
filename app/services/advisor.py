@@ -6,7 +6,7 @@ class CareerAdvisor:
     def __init__(self):
         # We try to load the API key from environment
         # If no key is found, we will use "Mock Mode"
-        api_key = getattr(settings, "OPENAI_API_KEY", None) or os.getenv("OPENAI_API_KEY")
+        api_key = getattr(settings, "GEMINI_API_KEY", None) or os.getenv("GEMINI_API_KEY") or getattr(settings, "OPENAI_API_KEY", None) or os.getenv("OPENAI_API_KEY")
         self.model = "gpt-3.5-turbo"
         if api_key:
             if api_key.startswith("AIza"):
@@ -93,7 +93,7 @@ class CareerAdvisor:
                 f"## 3. Getting Hired (Month 5+)\n"
                 f"- Create an online portfolio showcasing your newly built projects.\n"
                 f"- Optimize your resume and actively network for **{job_title}** positions!\n\n"
-                f"> **System Notice:** This is a locally generated system template. To receive a dynamic, highly personalized AI evaluation based on your exact profile parameters, please add an `OPENAI_API_KEY` to the `.env` file and restart the backend server."
+                f"> **System Notice:** This is a locally generated system template. To receive a dynamic, highly personalized AI evaluation based on your exact profile parameters, please add a `GEMINI_API_KEY` to the `.env` file and restart the backend server."
             )
 
         system_prompt = "You are an expert Career Counselor and educational planner. Generate a highly detailed, step-by-step roadmap in Markdown format. Be encouraging, professional, and thorough."

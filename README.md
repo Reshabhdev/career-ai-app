@@ -175,7 +175,7 @@ In the project root, create a `.env` file with the following variables:
 
 ```env
 # OpenAI Configuration
-OPENAI_API_KEY=sk-your-openai-api-key-here
+GEMINI_API_KEY=your-gemini-api-key-here
 
 # Qdrant Cloud Configuration (Optional - for cloud deployment)
 QDRANT_URL=https://your-qdrant-instance.qdrant.io
@@ -329,7 +329,7 @@ docker run -p 3000:3000 career-frontend
 3. Create new Web Service with:
    - **Build Command:** `pip install -r requirements.txt && python app/data_setup.py`
    - **Start Command:** `gunicorn app.main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker`
-   - **Environment Variables:** Add `OPENAI_API_KEY`
+   - **Environment Variables:** Add `GEMINI_API_KEY`
 4. Deploy from [render.yaml](render.yaml)
 
 **Live Backend:** https://careersystem-backend.onrender.com/

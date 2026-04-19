@@ -126,18 +126,7 @@ export default function Roadmap() {
           </div>
         )}
 
-        {error && (
-          <div className="bg-red-50 p-8 rounded-3xl border border-red-200">
-            <h3 className="text-xl font-bold text-red-800 mb-2">Error Generating Roadmap</h3>
-            <p className="text-red-600">{error}</p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="mt-6 px-6 py-2.5 bg-white text-red-700 rounded-lg font-bold border border-red-300 hover:bg-red-50 transition-colors shadow-sm"
-            >
-              Try Again
-            </button>
-          </div>
-        )}
+
 
         {roadmapData && !loading && (
           <motion.div 

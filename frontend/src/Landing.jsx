@@ -38,7 +38,7 @@ export default function Landing() {
   }, [isLoaded, isSignedIn, user]);
 
   return (
-    <div 
+    <div
       className={`min-h-screen font-sans transition-colors duration-500 selection:bg-orange-500/30 text-slate-800`}
       style={{
         backgroundImage: "url('/begground1.jpeg')",
@@ -153,9 +153,9 @@ export default function Landing() {
               'frontend/src/assets' folder, and update the 'src' below to import it.
               Example: import heroImage from '../assets/hero-image.png'; src={heroImage}
             */}
-            <img 
+            <img
               src="/carrer_image.jpeg"
-              alt="Career Intelligence Dashboard" 
+              alt="Career Intelligence Dashboard"
               className={`w-full max-w-lg object-cover rounded-2xl shadow-2xl transition-all duration-500 transform hover:scale-105 ${isDarkMode ? 'shadow-indigo-200/50 ring-1 ring-indigo-200' : 'shadow-[0_20px_40px_rgba(0,0,0,0.08)] ring-1 ring-black/5'}`}
             />
           </motion.div>
