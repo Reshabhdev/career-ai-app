@@ -17,6 +17,38 @@ class CareerAdvisor:
         else:
             self.client = None
 
+    def _get_mock_advice(self, user_profile: dict, jobs: list):
+        top_job = jobs[0]['title'] if jobs else "a technical role"
+        return (
+            f"Based on your interest in '{user_profile.get('interests', '')}', "
+            f"I highly recommend looking into **{top_job}**. "
+            f"Your skills in {user_profile.get('skills', '')} align perfectly with this role."
+        )
+
+    def _get_mock_roadmap(self, user_profile: dict, job_title: str):
+        skills = user_profile.get('skills') or 'your field'
+        return (
+            f"# Roadmap for {job_title}\n\n"
+            f"## Role Overview\n"
+            f"As a **{job_title}**, you will be responsible for defining, designing, and delivering high-quality solutions in your domain. This role requires a strong mixture of technical proficiency, problem-solving, and continuous learning.\n\n"
+            f"## Career Opportunities & Demand\n"
+            f"- **Demand**: High demand across multiple industries including tech, finance, and enterprise software.\n"
+            f"- **Salary Expectations**: Highly competitive, with specialized roles commanding premium compensation.\n"
+            f"- **Growth Path**: Rapid progression into Lead, Staff, or Management positions.\n\n"
+            f"## Recommended Study Strategy\n"
+            f"To transition effectively into this role, focus heavily on project-based learning. Spend 30% of your time on theory (courses, documentation) and 70% on building real-world projects. Engage with online communities and build a highly visible public portfolio.\n\n"
+            f"## 1. Foundations (Months 1-2)\n"
+            f"- Review the core fundamentals and architecture of the industry.\n"
+            f"- Complete a foundational certification or a highly-rated online bootcamp.\n\n"
+            f"## 2. Advanced Skills (Months 3-4)\n"
+            f"- Leverage your existing skills in **{skills}** to drastically accelerate your learning curve.\n"
+            f"- Build two complex, end-to-end projects that solve a real problem.\n\n"
+            f"## 3. Getting Hired (Month 5+)\n"
+            f"- Create an online portfolio showcasing your newly built projects.\n"
+            f"- Optimize your resume and actively network for **{job_title}** positions!\n\n"
+            f"> **System Notice:** This is a locally generated system template due to an API error or missing valid key. To receive a dynamic, highly personalized AI evaluation, please ensure your API key and quotas are valid."
+        )
+
     def generate_advice(self, user_profile: dict, jobs: list):
         """
         user_profile: Dict with 'interests', 'skills', 'age'
@@ -26,12 +58,7 @@ class CareerAdvisor:
         # --- Mock Mode (Fallback if no API Key) ---
         if not self.client:
             print("⚠️ No API Key found. Using Mock Advisor.")
-            top_job = jobs[0]['title']
-            return (
-                f"Based on your interest in '{user_profile['interests']}', "
-                f"I highly recommend looking into **{top_job}**. "
-                f"Your skills in {user_profile['skills']} align perfectly with this role."
-            )
+            return self._get_mock_advice(user_profile, jobs)
 
         # --- Real AI Mode ---
         # 1. Construct the Prompt (The "Context")
@@ -64,7 +91,8 @@ class CareerAdvisor:
             )
             return response.choices[0].message.content
         except Exception as e:
-            return f"Could not generate advice: {str(e)}"
+            print(f"⚠️ API Error evaluating advice: {e}")
+            return self._get_mock_advice(user_profile, jobs)
 
     def generate_roadmap(self, user_profile: dict, job_title: str):
         """
@@ -73,28 +101,7 @@ class CareerAdvisor:
         """
         if not self.client:
             print("⚠️ No API Key found. Using Mock Advisor.")
-            skills = user_profile.get('skills') or 'your field'
-            return (
-                f"# Roadmap for {job_title}\n\n"
-                f"## Role Overview\n"
-                f"As a **{job_title}**, you will be responsible for defining, designing, and delivering high-quality solutions in your domain. This role requires a strong mixture of technical proficiency, problem-solving, and continuous learning.\n\n"
-                f"## Career Opportunities & Demand\n"
-                f"- **Demand**: High demand across multiple industries including tech, finance, and enterprise software.\n"
-                f"- **Salary Expectations**: Highly competitive, with specialized roles commanding premium compensation.\n"
-                f"- **Growth Path**: Rapid progression into Lead, Staff, or Management positions.\n\n"
-                f"## Recommended Study Strategy\n"
-                f"To transition effectively into this role, focus heavily on project-based learning. Spend 30% of your time on theory (courses, documentation) and 70% on building real-world projects. Engage with online communities and build a highly visible public portfolio.\n\n"
-                f"## 1. Foundations (Months 1-2)\n"
-                f"- Review the core fundamentals and architecture of the industry.\n"
-                f"- Complete a foundational certification or a highly-rated online bootcamp.\n\n"
-                f"## 2. Advanced Skills (Months 3-4)\n"
-                f"- Leverage your existing skills in **{skills}** to drastically accelerate your learning curve.\n"
-                f"- Build two complex, end-to-end projects that solve a real problem.\n\n"
-                f"## 3. Getting Hired (Month 5+)\n"
-                f"- Create an online portfolio showcasing your newly built projects.\n"
-                f"- Optimize your resume and actively network for **{job_title}** positions!\n\n"
-                f"> **System Notice:** This is a locally generated system template. To receive a dynamic, highly personalized AI evaluation based on your exact profile parameters, please add a `GEMINI_API_KEY` to the `.env` file and restart the backend server."
-            )
+            return self._get_mock_roadmap(user_profile, job_title)
 
         system_prompt = "You are an expert Career Counselor and educational planner. Generate a highly detailed, step-by-step roadmap in Markdown format. Be encouraging, professional, and thorough."
         
@@ -129,4 +136,5 @@ class CareerAdvisor:
             )
             return response.choices[0].message.content
         except Exception as e:
-            return f"**System Error**: Could not generate roadmap: {str(e)}"
+            print(f"⚠️ API Error evaluating roadmap: {e}")
+            return self._get_mock_roadmap(user_profile, job_title)

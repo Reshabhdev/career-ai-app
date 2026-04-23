@@ -3,12 +3,10 @@ import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
 import Landing from './Landing';
 import MainApp from './MainApp';
 import Roadmap from './Roadmap';
-import AuthHeader from './components/AuthHeader';
 
 export default function App() {
   return (
     <Router>
-      <AuthHeader />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/app" element={
