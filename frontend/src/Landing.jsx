@@ -67,7 +67,7 @@ export default function Landing() {
           {/* Desktop Links */}
           <div className="hidden md:flex items-center gap-10 text-sm font-semibold">
             <a href="#platform" className={`transition-all hover:-translate-y-0.5 ${isDarkMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}>Platform</a>
-            <a href="#technology" className={`transition-all hover:-translate-y-0.5 ${isDarkMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}>Architecture</a>
+            <Link to="/about" className={`transition-all hover:-translate-y-0.5 ${isDarkMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}>About Us</Link>
             <a href="#data" className={`transition-all hover:-translate-y-0.5 ${isDarkMode ? 'text-slate-600 hover:text-slate-900' : 'text-slate-500 hover:text-slate-900'}`}>O*NET Engine</a>
           </div>
 
@@ -97,7 +97,7 @@ export default function Landing() {
       <main className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-16">
 
         {/* Hero Section */}
-        <section className="py-16 md:py-24 grid lg:grid-cols-2 gap-16 items-center">
+        <section id="platform" className="py-16 md:py-24 grid lg:grid-cols-2 gap-16 items-center">
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -204,6 +204,45 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* Data / O*NET Engine Section */}
+        <section id="data" className="py-24 border-t border-slate-200/10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="order-2 lg:order-1">
+              <div className={`p-8 rounded-3xl border transition-colors ${isDarkMode ? 'bg-white/40 border-indigo-200/50 backdrop-blur-md' : 'bg-white border-slate-200 shadow-xl shadow-slate-200/50'}`}>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isDarkMode ? 'bg-blue-100 text-blue-600' : 'bg-blue-50 text-blue-500'}`}>
+                    <Activity className="w-6 h-6" />
+                  </div>
+                  <h3 className={`text-2xl font-bold ${isDarkMode ? 'text-slate-900' : 'text-slate-900'}`}>Verified Database</h3>
+                </div>
+                <p className={`mb-6 leading-relaxed ${isDarkMode ? 'text-slate-600' : 'text-slate-600'}`}>
+                  Our intelligent engine is directly integrated with the <strong>O*NET (Occupational Information Network)</strong> database, the primary source of occupational information in the United States. 
+                </p>
+                <ul className={`space-y-3 text-sm ${isDarkMode ? 'text-slate-600' : 'text-slate-600'}`}>
+                  <li className="flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    Over 900 distinct career profiles
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                    Continuously updated skill requirements
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                    Real-world task and technology mappings
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="order-1 lg:order-2">
+              <h2 className={`text-3xl font-extrabold tracking-tight mb-6 ${isDarkMode ? 'text-slate-900' : 'text-slate-900'}`}>Powered by <br/><span className="text-blue-600">O*NET Data</span></h2>
+              <p className={`text-lg leading-relaxed ${isDarkMode ? 'text-slate-600' : 'text-slate-600'}`}>
+                By combining advanced vector embeddings with official O*NET taxonomy, CareerGuide AI achieves unprecedented accuracy. The AI doesn't hallucinate paths; it intelligently maps your unique profile onto a rigorous, standardized occupational framework.
+              </p>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       {/* Footer */}
@@ -216,9 +255,9 @@ export default function Landing() {
             </span>
           </div>
           <div className={`flex gap-8 text-sm font-semibold ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>
-            <a href="#" className={`transition-colors ${isDarkMode ? 'hover:text-slate-700' : 'hover:text-slate-800'}`}>Documentation</a>
-            <a href="#" className={`transition-colors ${isDarkMode ? 'hover:text-slate-700' : 'hover:text-slate-800'}`}>Privacy Policy</a>
-            <a href="#" className={`transition-colors ${isDarkMode ? 'hover:text-slate-700' : 'hover:text-slate-800'}`}>Terms of Service</a>
+            <Link to="/docs" className={`transition-colors ${isDarkMode ? 'hover:text-slate-700' : 'hover:text-slate-800'}`}>Documentation</Link>
+            <Link to="/privacy" className={`transition-colors ${isDarkMode ? 'hover:text-slate-700' : 'hover:text-slate-800'}`}>Privacy Policy</Link>
+            <Link to="/terms" className={`transition-colors ${isDarkMode ? 'hover:text-slate-700' : 'hover:text-slate-800'}`}>Terms of Service</Link>
           </div>
         </div>
       </footer>
