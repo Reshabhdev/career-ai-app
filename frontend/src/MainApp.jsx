@@ -47,7 +47,10 @@ export default function MainApp() {
         }
       }
     } catch (err) {
-      setError('Unable to connect to the analysis engine. Please try again later.');
+      console.error('Full connection error:', err);
+      const details = err.response?.data?.detail || err.message || 'Unknown network error';
+      const apiUrl = err.config?.url || 'Unknown URL';
+      setError(`Unable to connect to the analysis engine (tried: ${apiUrl}). Details: ${details}. Please try again later.`);
     } finally {
       setLoading(false);
     }

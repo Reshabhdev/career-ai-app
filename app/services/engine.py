@@ -24,44 +24,40 @@ class CareerEngine:
             print(f"⚠️ Qdrant initialization failed: {e} — falling back to local search")
             self.client = None
 
-            # Local fallback: load precomputed embeddings and job metadata
+            # Local fallback: load precomputed embeddings using mmap_mode to save RAM
             try:
                 import numpy as _np
-                import pandas as _pd
 
                 emb_path = os.path.join(settings.DATA_DIR, "job_embeddings.npy")
-                csv_path = os.path.join(settings.DATA_DIR, "job_dataset.csv")
-                self.embeddings = _np.load(emb_path)
-                self.df = _pd.read_csv(csv_path)
-                print(f"✅ Loaded local fallback data: {len(self.df)} jobs")
+                self.csv_path = os.path.join(settings.DATA_DIR, "job_dataset.csv")
+                self.embeddings = _np.load(emb_path, mmap_mode='r')
+                print(f"✅ Loaded local fallback data: {self.embeddings.shape[0]} jobs")
             except Exception as e2:
                 print(f"❌ Failed to load local fallback data: {e2}")
                 self.embeddings = None
-                self.local_jobs = []
+                self.csv_path = None
 
         # SentenceTransformer used both with Qdrant (to create query vectors)
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
         self.collection = "careers"
         # Local fallback data (loaded on demand)
         self.embeddings = getattr(self, 'embeddings', None)
-        self.df = getattr(self, 'df', None)
+        self.csv_path = getattr(self, 'csv_path', None)
 
     def _ensure_local_data_loaded(self):
-        if self.embeddings is not None and getattr(self, 'df', None) is not None:
+        if self.embeddings is not None and getattr(self, 'csv_path', None) is not None:
             return
         try:
             import numpy as _np
-            import pandas as _pd
 
             emb_path = os.path.join(settings.DATA_DIR, "job_embeddings.npy")
-            csv_path = os.path.join(settings.DATA_DIR, "job_dataset.csv")
-            self.embeddings = _np.load(emb_path)
-            self.df = _pd.read_csv(csv_path)
-            print(f"✅ Loaded local fallback data: {len(self.df)} jobs")
+            self.csv_path = os.path.join(settings.DATA_DIR, "job_dataset.csv")
+            self.embeddings = _np.load(emb_path, mmap_mode='r')
+            print(f"✅ Loaded local fallback data: {self.embeddings.shape[0]} jobs")
         except Exception as e:
             print(f"❌ Failed to load local fallback data: {e}")
             self.embeddings = None
-            self.df = None
+            self.csv_path = None
 
     def search(self, user_query: str, max_education_level: int = 5, top_k=5):
         import time
@@ -111,13 +107,13 @@ class CareerEngine:
                 print(f"⚠️ Qdrant query failed: {e} — attempting local fallback")
                 self._ensure_local_data_loaded()
                 # if local data missing, re-raise original error
-                if self.embeddings is None or getattr(self, 'df', None) is None:
+                if self.embeddings is None or getattr(self, 'csv_path', None) is None:
                     raise
 
         # Local fallback search using precomputed embeddings
         # Ensure local data is loaded
         self._ensure_local_data_loaded()
-        if self.embeddings is None or getattr(self, 'df', None) is None or self.df.empty:
+        if self.embeddings is None or getattr(self, 'csv_path', None) is None or not os.path.exists(self.csv_path):
             raise RuntimeError("No search backend available (Qdrant unavailable and local fallback missing)")
 
         # Compute similarity between query vector and embeddings
@@ -130,28 +126,37 @@ class CareerEngine:
 
             sims = cosine_similarity(query_vec, self.embeddings)[0]
             # Filter by job_zone (csv column 'Job Zone' -- numeric), then take top_k
-            indexed = list(enumerate(sims))
-            # The new dataset `job_dataset.csv` does not have a job zone filtering metric, so bypass job_zone filter
-            filtered = list(indexed)
-
-            filtered.sort(key=lambda x: x[1], reverse=True)
-            top = filtered[:top_k]
-
+            top_indices = _np.argsort(sims)[::-1][:top_k]
+            top_scores = sims[top_indices]
+            
+            idx_to_score = dict(zip(top_indices, top_scores))
+            
             results = []
-            for idx, score in top:
-                row = self.df.iloc[idx].to_dict()
-                row_id = row.get('job_id') or row.get('O*NET-SOC Code') or row.get('O*NET_SOC Code') or str(idx)
-                row_title = row.get('job_title') or row.get('Title') or row.get('title') or 'Unknown'
-                row_desc = row.get('descriptions') or row.get('Description') or ''
-                row_edu = row.get('Education_Level') or row.get('Education Level') or 'Not Specified'
-                
-                results.append({
-                    "id": str(row_id),
-                    "title": str(row_title),
-                    "match_score": round(float(score) * 100, 2),
-                    "education_requirement": str(row_edu),
-                    "description": str(row_desc)
-                })
+            import csv
+            target_indices = set(top_indices)
+            
+            with open(self.csv_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for idx, row in enumerate(reader):
+                    if idx in target_indices:
+                        score = idx_to_score[idx]
+                        row_id = row.get('job_id') or row.get('O*NET-SOC Code') or row.get('O*NET_SOC Code') or str(idx)
+                        row_title = row.get('job_title') or row.get('Title') or row.get('title') or 'Unknown'
+                        row_desc = row.get('descriptions') or row.get('Description') or ''
+                        row_edu = row.get('Education_Level') or row.get('Education Level') or 'Not Specified'
+                        
+                        results.append({
+                            "id": str(row_id),
+                            "title": str(row_title),
+                            "match_score": round(float(score) * 100, 2),
+                            "education_requirement": str(row_edu),
+                            "description": str(row_desc)
+                        })
+                        if len(results) == top_k:
+                            break
+                            
+            # Re-sort results to match the similarity order
+            results.sort(key=lambda x: x['match_score'], reverse=True)
 
             t6 = time.time()
             print(f"[TIMING] Local: encode={t5-t4:.3f}s, similarity+filter={t6-t5:.3f}s, total={t6-t0:.3f}s")
